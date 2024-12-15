@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mis Toots</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #rss-content {
+          overflow-wrap: break-word;
+        }
+        #error-message {
+          color: red; /* Estilo para mensajes de error */
+        }
+    </style>
+</head>
+<body>
+    <h1>Mis Toots</h1>
+    <div id="rss-content">Cargando...</div>
+    <div id="error-message"></div>
+
+    <script>
+        function loadRSS() {
+            const feedUrl = 'https://tkz.one/@nubesurrealista.rss';
+            const proxyURL = 'https://cors-anywhere.herokuapp.com/';
+            const cacheKey = 'lastRSSPost';
+            const cacheTime = 3600000;
+
+            const cachedData = localStorage.getItem(cacheKey);
+            const cachedTime = localStorage.getItem(cacheKey + '_time');
+
+            if (cachedData && cachedTime && (Date.now() - parseInt(cachedTime) < cacheTime)) {
+                document.getElementById("rss-content").innerHTML = cachedData;
+                return;
+            }
+
+             if (!window.fetch) {
+               document.write('<script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3.6.2/dist/fetch.umd.min.js"><\/script>');
+            }
+
+            fetch(proxyURL + feedUrl)
+                .then(response => response.text())
+                .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
+                .then(data => {
+                    const items = data.querySelectorAll("item");
+                    const contentDiv = document.getElementById("rss-content");
+                    const errorDiv = document.getElementById("error-message");
+
+                    if (items.length > 0) {
+                      contentDiv.innerHTML = ''; // Limpiar "Cargando..."
+                      errorDiv.innerText = ''; // Limpiar mensajes de error anteriores
+
+                        items.forEach(item => {
+                          const title = item.querySelector("title").textContent;
+                          const link = item.querySelector("link").textContent;
+                          let description = item.querySelector("description").textContent;
+
+                          const maxDescriptionLength = 200;
+                          if (description.length > maxDescriptionLength) {
+                              description = description.substring(0, maxDescriptionLength) + "...";
+                          }
+                         
+                           const htmlContent = `<h2><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></h2><p>${description}</p><hr/>`;
+                            contentDiv.innerHTML += htmlContent; // Añadir cada item
+                        });
+                       
+                        localStorage.setItem(cacheKey, contentDiv.innerHTML);
+                        localStorage.setItem(cacheKey + '_time', Date.now());
+                    } else {
+                        contentDiv.innerHTML = ''; // Limpiar "Cargando..."
+                      errorDiv.innerText = "No hay toots en el feed.";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al cargar el feed:", error);
+                     document.getElementById("rss-content").innerHTML = ''; // Limpiar "Cargando..."
+                    document.getElementById("error-message").innerText = "Error al cargar el feed.";
+                });
+        }
+
+        window.onload = loadRSS;
+    </script>
+</body>
+</html>
