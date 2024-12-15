@@ -17,7 +17,23 @@
           overflow-wrap: break-word;
         }
         #error-message {
-          color: red; /* Estilo para mensajes de error */
+          color: red;
+        }
+        .toot {
+            margin-bottom: 1em;
+        }
+        .toot p {
+            margin: 0.5em 0;
+        }
+        .media-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px; /* Espacio entre imágenes */
+        }
+        .media-gallery img {
+            max-width: 100%; /* Asegura que las imágenes no se desborden */
+            height: auto;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -27,65 +43,75 @@
     <div id="error-message"></div>
 
     <script>
-        function loadRSS() {
-            const feedUrl = 'https://tkz.one/@nubesurrealista.rss';
-            const proxyURL = 'https://cors-anywhere.herokuapp.com/';
-            const cacheKey = 'lastRSSPost';
-            const cacheTime = 3600000;
+        const instanceURL = 'https://tkz.one';
+        const userHandle = 'nubesurrealista';
 
-            const cachedData = localStorage.getItem(cacheKey);
-            const cachedTime = localStorage.getItem(cacheKey + '_time');
+        function loadToots() {
+            const errorDiv = document.getElementById("error-message");
+            const contentDiv = document.getElementById("rss-content");
+            contentDiv.innerHTML = 'Cargando...';
+            errorDiv.innerText = '';
 
-            if (cachedData && cachedTime && (Date.now() - parseInt(cachedTime) < cacheTime)) {
-                document.getElementById("rss-content").innerHTML = cachedData;
-                return;
-            }
+            fetch(`${instanceURL}/api/v1/accounts/lookup?acct=${userHandle}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error al buscar la cuenta: ${response.status} ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(account => {
+                   if(!account)
+                   {
+                     throw new Error(`No se encontro la cuenta ${userHandle}`);
+                   }
+                    const userId = account.id;
+                    return fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?limit=20`);
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error al cargar los toots: ${response.status} ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(toots => {
+                    contentDiv.innerHTML = '';
+                    if (toots && toots.length > 0) {
+                        toots.forEach(toot => {
+                            const content = toot.content;
+                            const createdAt = new Date(toot.created_at).toLocaleString();
+                            const url = toot.url;
+                            const mediaAttachments = toot.media_attachments;
+                            let mediaHtml = '';
 
-             if (!window.fetch) {
-               document.write('<script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3.6.2/dist/fetch.umd.min.js"><\/script>');
-            }
+                            if (mediaAttachments && mediaAttachments.length > 0) {
+                                mediaHtml = '<div class="media-gallery">';
+                                mediaAttachments.forEach(media => {
+                                    if (media.type === 'image') {
+                                        mediaHtml += `<img src="${media.url}" alt="${media.description || 'Imagen adjunta'}">`;
+                                    }
+                                });
+                                mediaHtml += '</div>';
+                            }
 
-            fetch(proxyURL + feedUrl)
-                .then(response => response.text())
-                .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
-                .then(data => {
-                    const items = data.querySelectorAll("item");
-                    const contentDiv = document.getElementById("rss-content");
-                    const errorDiv = document.getElementById("error-message");
-
-                    if (items.length > 0) {
-                      contentDiv.innerHTML = ''; // Limpiar "Cargando..."
-                      errorDiv.innerText = ''; // Limpiar mensajes de error anteriores
-
-                        items.forEach(item => {
-                          const title = item.querySelector("title").textContent;
-                          const link = item.querySelector("link").textContent;
-                          let description = item.querySelector("description").textContent;
-
-                          const maxDescriptionLength = 200;
-                          if (description.length > maxDescriptionLength) {
-                              description = description.substring(0, maxDescriptionLength) + "...";
-                          }
-                         
-                           const htmlContent = `<h2><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></h2><p>${description}</p><hr/>`;
-                            contentDiv.innerHTML += htmlContent; // Añadir cada item
+                            const htmlContent = `<div class="toot">
+                                                    <p>${content}</p>
+                                                    ${mediaHtml}
+                                                    <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
+                                                  </div><hr/>`;
+                            contentDiv.innerHTML += htmlContent;
                         });
-                       
-                        localStorage.setItem(cacheKey, contentDiv.innerHTML);
-                        localStorage.setItem(cacheKey + '_time', Date.now());
                     } else {
-                        contentDiv.innerHTML = ''; // Limpiar "Cargando..."
-                      errorDiv.innerText = "No hay toots en el feed.";
+                        errorDiv.innerText = 'No se encontraron toots.';
                     }
                 })
                 .catch(error => {
-                    console.error("Error al cargar el feed:", error);
-                     document.getElementById("rss-content").innerHTML = ''; // Limpiar "Cargando..."
-                    document.getElementById("error-message").innerText = "Error al cargar el feed.";
+                    console.error("Error:", error);
+                    contentDiv.innerHTML = '';
+                    errorDiv.innerText = `Error: ${error.message}`;
                 });
         }
 
-        window.onload = loadRSS;
+        window.onload = loadToots;
     </script>
 </body>
 </html>
