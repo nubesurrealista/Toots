@@ -11,6 +11,7 @@
             --link-color: #0366d6;
             --link-hover-color: #034c9b;
             --error-color: red;
+            --title-font-size: 2.5em;
         }
 
         [data-theme="dark"] {
@@ -21,10 +22,21 @@
             --error-color: #cf6679;
         }
 
+        [data-theme="blue"] {
+            --background-color: #e0f7fa;
+            --text-color: #00796b;
+            --link-color: #004d40;
+            --link-hover-color: #00251a;
+            --error-color: #d32f2f;
+        }
+
         body {
             font-family: sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
+            margin: 0;
+            padding: 1em;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         a {
@@ -47,6 +59,14 @@
 
         .toot {
             margin-bottom: 1em;
+            padding: 1em;
+            border-radius: 5px;
+            background-color: rgba(128, 128, 128, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .toot:hover {
+            transform: scale(1.02);
         }
 
         .toot p {
@@ -63,6 +83,11 @@
             max-width: 100%; /* Asegura que las imágenes no se desborden */
             height: auto;
             border-radius: 5px;
+            transition: transform 0.3s;
+        }
+
+        .media-gallery img:hover {
+            transform: scale(1.05);
         }
 
         #theme-toggle {
@@ -76,13 +101,73 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: var(--background-color);
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        h1 {
+            font-size: var(--title-font-size);
+            animation: fadeIn 2s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #mastodon-icon {
+            width: 50px;
+            height: 50px;
+        }
     </style>
 </head>
 <body data-theme="light">
-    <h1>Mis Toots</h1>
+    <h1>Mis Toots <img id="mastodon-icon" src="https://upload.wikimedia.org/wikipedia/commons/4/48/Mastodon_Logotype_%28Simple%29.svg" alt="Mastodon Icon"></h1>
     <div id="rss-content">Cargando...</div>
     <div id="error-message"></div>
     <button id="theme-toggle">Cambiar Tema</button>
+    <a href="https://github.com/nubesurrealista/Toots" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+
+    <!-- Modal for viewing individual posts -->
+    <div id="postModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-content"></div>
+        </div>
+    </div>
 
     <script>
         const instanceURL = 'https://tkz.one';
@@ -141,6 +226,7 @@
                                 <p>${content}</p>
                                 ${mediaHtml}
                                 <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
+                                <button onclick="viewPost('${toot.id}')">Ver más</button>
                             </div>
                             <hr/>
                         `;
@@ -156,16 +242,71 @@
             }
         }
 
+        async function viewPost(postId) {
+            const modal = document.getElementById("postModal");
+            const modalContent = document.getElementById("modal-content");
+            const errorDiv = document.getElementById("error-message");
+
+            try {
+                const postResponse = await fetch(`${instanceURL}/api/v1/statuses/${postId}`);
+                if (!postResponse.ok) {
+                    throw new Error(`Error al cargar el toot: ${postResponse.status} ${postResponse.statusText}`);
+                }
+                const post = await postResponse.json();
+                const content = sanitizeHTML(post.content);
+                const createdAt = new Date(post.created_at).toLocaleString();
+                const url = post.url;
+                const mediaAttachments = post.media_attachments;
+                let mediaHtml = '';
+
+                if (mediaAttachments.length > 0) {
+                    mediaHtml = '<div class="media-gallery">';
+                    mediaAttachments.forEach(media => {
+                        if (media.type === 'image') {
+                            mediaHtml += `<img src="${media.url}" alt="${media.description || 'Imagen adjunta'}">`;
+                        }
+                    });
+                    mediaHtml += '</div>';
+                }
+
+                const htmlContent = `
+                    <div class="toot">
+                        <p>${content}</p>
+                        ${mediaHtml}
+                        <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
+                    </div>
+                `;
+                modalContent.innerHTML = htmlContent;
+                modal.style.display = "block";
+            } catch (error) {
+                console.error("Error:", error);
+                errorDiv.innerText = `Error: ${error.message}`;
+            }
+        }
+
         function toggleTheme() {
             const body = document.body;
             const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'blue' : 'light';
             body.setAttribute('data-theme', newTheme);
+            document.getElementById('theme-toggle').innerText = `Tema: ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)}`;
         }
 
         document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
         window.onload = loadToots;
+
+        // Modal close functionality
+        const modal = document.getElementById("postModal");
+        const span = document.getElementsByClassName("close")[0];
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
     </script>
 </body>
 </html>
