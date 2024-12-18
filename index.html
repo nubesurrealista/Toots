@@ -1,115 +1,169 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Toots</title>
     <style>
+        :root {
+            --background-color: #ffffff;
+            --text-color: #000000;
+            --link-color: #0366d6;
+            --link-hover-color: #034c9b;
+            --error-color: red;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #121212;
+            --text-color: #ffffff;
+            --link-color: #bb86fc;
+            --link-hover-color: #3700b3;
+            --error-color: #cf6679;
+        }
+
         body {
             font-family: sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
         }
+
         a {
-            color: #0366d6;
+            color: var(--link-color);
             text-decoration: none;
         }
+
         a:hover {
             text-decoration: underline;
+            color: var(--link-hover-color);
         }
+
         #rss-content {
-          overflow-wrap: break-word;
+            overflow-wrap: break-word;
         }
+
         #error-message {
-          color: red;
+            color: var(--error-color);
         }
+
         .toot {
             margin-bottom: 1em;
         }
+
         .toot p {
             margin: 0.5em 0;
         }
+
         .media-gallery {
             display: flex;
             flex-wrap: wrap;
             gap: 5px; /* Espacio entre imágenes */
         }
+
         .media-gallery img {
             max-width: 100%; /* Asegura que las imágenes no se desborden */
             height: auto;
             border-radius: 5px;
         }
+
+        #theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: var(--link-color);
+            color: var(--background-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
-<body>
+<body data-theme="light">
     <h1>Mis Toots</h1>
     <div id="rss-content">Cargando...</div>
     <div id="error-message"></div>
+    <button id="theme-toggle">Cambiar Tema</button>
 
     <script>
         const instanceURL = 'https://tkz.one';
         const userHandle = 'nubesurrealista';
 
-        function loadToots() {
+        function sanitizeHTML(html) {
+            const template = document.createElement('template');
+            template.innerHTML = html;
+            return template.content.textContent || '';
+        }
+
+        async function loadToots() {
             const errorDiv = document.getElementById("error-message");
             const contentDiv = document.getElementById("rss-content");
             contentDiv.innerHTML = 'Cargando...';
             errorDiv.innerText = '';
 
-            fetch(`${instanceURL}/api/v1/accounts/lookup?acct=${userHandle}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error al buscar la cuenta: ${response.status} ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(account => {
-                   if(!account)
-                   {
-                     throw new Error(`No se encontro la cuenta ${userHandle}`);
-                   }
-                    const userId = account.id;
-                    return fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?limit=20`);
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error al cargar los toots: ${response.status} ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(toots => {
-                    contentDiv.innerHTML = '';
-                    if (toots && toots.length > 0) {
-                        toots.forEach(toot => {
-                            const content = toot.content;
-                            const createdAt = new Date(toot.created_at).toLocaleString();
-                            const url = toot.url;
-                            const mediaAttachments = toot.media_attachments;
-                            let mediaHtml = '';
+            try {
+                const accountResponse = await fetch(`${instanceURL}/api/v1/accounts/lookup?acct=${userHandle}`);
+                if (!accountResponse.ok) {
+                    throw new Error(`Error al buscar la cuenta: ${accountResponse.status} ${accountResponse.statusText}`);
+                }
+                const account = await accountResponse.json();
+                if (!account) {
+                    throw new Error(`No se encontró la cuenta ${userHandle}`);
+                }
 
-                            if (mediaAttachments && mediaAttachments.length > 0) {
-                                mediaHtml = '<div class="media-gallery">';
-                                mediaAttachments.forEach(media => {
-                                    if (media.type === 'image') {
-                                        mediaHtml += `<img src="${media.url}" alt="${media.description || 'Imagen adjunta'}">`;
-                                    }
-                                });
-                                mediaHtml += '</div>';
-                            }
+                const userId = account.id;
+                const tootsResponse = await fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?limit=20`);
+                if (!tootsResponse.ok) {
+                    throw new Error(`Error al cargar los toots: ${tootsResponse.status} ${tootsResponse.statusText}`);
+                }
+                const toots = await tootsResponse.json();
 
-                            const htmlContent = `<div class="toot">
-                                                    <p>${content}</p>
-                                                    ${mediaHtml}
-                                                    <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
-                                                  </div><hr/>`;
-                            contentDiv.innerHTML += htmlContent;
-                        });
-                    } else {
-                        errorDiv.innerText = 'No se encontraron toots.';
-                    }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    contentDiv.innerHTML = '';
-                    errorDiv.innerText = `Error: ${error.message}`;
-                });
+                contentDiv.innerHTML = '';
+                if (toots.length > 0) {
+                    toots.forEach(toot => {
+                        const content = sanitizeHTML(toot.content);
+                        const createdAt = new Date(toot.created_at).toLocaleString();
+                        const url = toot.url;
+                        const mediaAttachments = toot.media_attachments;
+                        let mediaHtml = '';
+
+                        if (mediaAttachments.length > 0) {
+                            mediaHtml = '<div class="media-gallery">';
+                            mediaAttachments.forEach(media => {
+                                if (media.type === 'image') {
+                                    mediaHtml += `<img src="${media.url}" alt="${media.description || 'Imagen adjunta'}">`;
+                                }
+                            });
+                            mediaHtml += '</div>';
+                        }
+
+                        const htmlContent = `
+                            <div class="toot">
+                                <p>${content}</p>
+                                ${mediaHtml}
+                                <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
+                            </div>
+                            <hr/>
+                        `;
+                        contentDiv.innerHTML += htmlContent;
+                    });
+                } else {
+                    errorDiv.innerText = 'No se encontraron toots.';
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                contentDiv.innerHTML = '';
+                errorDiv.innerText = `Error: ${error.message}`;
+            }
         }
+
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+        }
+
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
         window.onload = loadToots;
     </script>
