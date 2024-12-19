@@ -217,9 +217,17 @@
                 }
                 const toots = await tootsResponse.json();
                 
+                const reblogsResponse = await fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?only_media=false&exclude_replies=false&exclude_reblogs=false&limit=20`);
+                if (!reblogsResponse.ok) {
+                    throw new Error(`Error al cargar los reblogs: ${reblogsResponse.status} ${reblogsResponse.statusText}`);
+                }
+                const reblogs = await reblogsResponse.json();
+
+                const allToots = [...toots, ...reblogs];
+
                 contentDiv.innerHTML = '';
-                if (toots.length > 0) {
-                    toots.forEach(toot => {
+                if (allToots.length > 0) {
+                    allToots.forEach(toot => {
                         let content = sanitizeHTML(toot.content);
                         const createdAt = new Date(toot.created_at).toLocaleString();
                         const url = toot.url;
