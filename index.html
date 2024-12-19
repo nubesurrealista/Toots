@@ -46,7 +46,7 @@
 
         a:hover {
             text-decoration: underline;
-            color: var(--link-hover-color);
+            color: var (--link-hover-color);
         }
 
         #rss-content {
@@ -152,6 +152,27 @@
             width: 50px;
             height: 50px;
         }
+        
+        .toot-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .toot-info {
+            margin-left: 10px;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+        }
     </style>
 </head>
 <body data-theme="light">
@@ -196,12 +217,12 @@
                 }
 
                 const userId = account.id;
-                const tootsResponse = await fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?limit=20`);
+                const tootsResponse = await fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?limit=20&exclude_replies=false`);
                 if (!tootsResponse.ok) {
                     throw new Error(`Error al cargar los toots: ${tootsResponse.status} ${tootsResponse.statusText}`);
                 }
                 const toots = await tootsResponse.json();
-
+                
                 contentDiv.innerHTML = '';
                 if (toots.length > 0) {
                     toots.forEach(toot => {
@@ -209,7 +230,10 @@
                         const createdAt = new Date(toot.created_at).toLocaleString();
                         const url = toot.url;
                         const mediaAttachments = toot.media_attachments;
+                        const avatar = toot.account.avatar;
+                        const emojis = toot.emojis;
                         let mediaHtml = '';
+                        let emojiHtml = '';
 
                         if (mediaAttachments.length > 0) {
                             mediaHtml = '<div class="media-gallery">';
@@ -221,10 +245,27 @@
                             mediaHtml += '</div>';
                         }
 
+                        if (emojis.length > 0) {
+                            emojis.forEach(emoji => {
+                                content = content.replace(`:${emoji.shortcode}:`, `<img src="${emoji.url}" alt="${emoji.shortcode}" class="emoji">`);
+                            });
+                        }
+
                         const htmlContent = `
                             <div class="toot">
+                                <div class="toot-header">
+                                    <img src="${avatar}" alt="Avatar" class="avatar">
+                                    <div class="toot-info">
+                                        <h3>${toot.account.display_name}</h3>
+                                        <p>@${toot.account.acct}</p>
+                                    </div>
+                                </div>
                                 <p>${content}</p>
                                 ${mediaHtml}
+                                <p>
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Octicons-star.svg" class="icon" alt="Like"> ${toot.favourites_count}
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Octicons-repo-forked.svg" class="icon" alt="Retoot"> ${toot.reblogs_count}
+                                </p>
                                 <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
                                 <button onclick="viewPost('${toot.id}')">Ver más</button>
                             </div>
@@ -257,7 +298,10 @@
                 const createdAt = new Date(post.created_at).toLocaleString();
                 const url = post.url;
                 const mediaAttachments = post.media_attachments;
+                const avatar = post.account.avatar;
+                const emojis = post.emojis;
                 let mediaHtml = '';
+                let emojiHtml = '';
 
                 if (mediaAttachments.length > 0) {
                     mediaHtml = '<div class="media-gallery">';
@@ -269,10 +313,27 @@
                     mediaHtml += '</div>';
                 }
 
+                if (emojis.length > 0) {
+                    emojis.forEach(emoji => {
+                        content = content.replace(`:${emoji.shortcode}:`, `<img src="${emoji.url}" alt="${emoji.shortcode}" class="emoji">`);
+                    });
+                }
+
                 const htmlContent = `
                     <div class="toot">
+                        <div class="toot-header">
+                            <img src="${avatar}" alt="Avatar" class="avatar">
+                            <div class="toot-info">
+                                <h3>${post.account.display_name}</h3>
+                                <p>@${post.account.acct}</p>
+                            </div>
+                        </div>
                         <p>${content}</p>
                         ${mediaHtml}
+                        <p>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Octicons-star.svg" class="icon" alt="Like"> ${post.favourites_count}
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Octicons-repo-forked.svg" class="icon" alt="Retoot"> ${post.reblogs_count}
+                        </p>
                         <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
                     </div>
                 `;
