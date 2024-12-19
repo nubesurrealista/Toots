@@ -1,311 +1,166 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Toots</title>
+    <title>Toots</title>
     <style>
-        :root {
-            --background-color: #ffffff;
-            --text-color: #000000;
-            --link-color: #0366d6;
-            --link-hover-color: #034c9b;
-            --error-color: red;
-            --title-font-size: 2.5em;
-        }
-
-        [data-theme="dark"] {
-            --background-color: #121212;
-            --text-color: #ffffff;
-            --link-color: #bb86fc;
-            --link-hover-color: #3700b3;
-            --error-color: #cf6679;
-        }
-
-        [data-theme="blue"] {
-            --background-color: #e0f7fa;
-            --text-color: #00796b;
-            --link-color: #004d40;
-            --link-hover-color: #00251a;
-            --error-color: #d32f2f;
-        }
-
         body {
-            font-family: sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 1em;
-            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Roboto', sans-serif;
+            background-color: #e8f5e9;
+            color: #212121;
         }
 
-        a {
-            color: var(--link-color);
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-            color: var(--link-hover-color);
-        }
-
-        #rss-content {
-            overflow-wrap: break-word;
-        }
-
-        #error-message {
-            color: var(--error-color);
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         .toot {
-            margin-bottom: 1em;
-            padding: 1em;
-            border-radius: 5px;
-            background-color: rgba(128, 128, 128, 0.1);
-            transition: transform 0.3s;
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease-in-out;
         }
 
         .toot:hover {
-            transform: scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
 
-        .toot p {
-            margin: 0.5em 0;
-        }
-
-        .media-gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px; /* Espacio entre imágenes */
-        }
-
-        .media-gallery img {
-            max-width: 100%; /* Asegura que las imágenes no se desborden */
-            height: auto;
-            border-radius: 5px;
-            transition: transform 0.3s;
-        }
-
-        .media-gallery img:hover {
-            transform: scale(1.05);
-        }
-
-        #theme-toggle {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            background-color: var(--link-color);
-            color: var(--background-color);
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #ffffff;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
-            padding-top: 60px;
+        button:hover {
+            background-color: #0056b3;
         }
 
-        .modal-content {
-            background-color: var(--background-color);
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        h1 {
-            font-size: var(--title-font-size);
-            animation: fadeIn 2s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        #mastodon-icon {
-            width: 50px;
-            height: 50px;
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
-<body data-theme="light">
-    <h1>Mis Toots <img id="mastodon-icon" src="https://upload.wikimedia.org/wikipedia/commons/4/48/Mastodon_Logotype_%28Simple%29.svg" alt="Mastodon Icon"></h1>
-    <div id="rss-content">Cargando...</div>
-    <div id="error-message"></div>
-    <button id="theme-toggle">Cambiar Tema</button>
-    <a href="https://github.com/nubesurrealista/Toots" target="_blank" rel="noopener noreferrer">View on GitHub</a>
-
-    <!-- Modal for viewing individual posts -->
-    <div id="postModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="modal-content"></div>
-        </div>
+<body>
+    <div class="container">
+        <div id="stats" class="stats"></div>
+        <div id="timeline"></div>
     </div>
 
     <script>
-        const instanceURL = 'https://tkz.one';
-        const userHandle = 'nubesurrealista';
-
-        function sanitizeHTML(html) {
-            const template = document.createElement('template');
-            template.innerHTML = html;
-            return template.content.textContent || '';
-        }
-
-        async function loadToots() {
-            const errorDiv = document.getElementById("error-message");
-            const contentDiv = document.getElementById("rss-content");
-            contentDiv.innerHTML = 'Cargando...';
-            errorDiv.innerText = '';
-
-            try {
-                const accountResponse = await fetch(`${instanceURL}/api/v1/accounts/lookup?acct=${userHandle}`);
-                if (!accountResponse.ok) {
-                    throw new Error(`Error al buscar la cuenta: ${accountResponse.status} ${accountResponse.statusText}`);
-                }
-                const account = await accountResponse.json();
-                if (!account) {
-                    throw new Error(`No se encontró la cuenta ${userHandle}`);
-                }
-
-                const userId = account.id;
-                const tootsResponse = await fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?limit=20`);
-                if (!tootsResponse.ok) {
-                    throw new Error(`Error al cargar los toots: ${tootsResponse.status} ${tootsResponse.statusText}`);
-                }
-                const toots = await tootsResponse.json();
-
-                contentDiv.innerHTML = '';
-                if (toots.length > 0) {
-                    toots.forEach(toot => {
-                        const content = sanitizeHTML(toot.content);
-                        const createdAt = new Date(toot.created_at).toLocaleString();
-                        const url = toot.url;
-                        const mediaAttachments = toot.media_attachments;
-                        let mediaHtml = '';
-
-                        if (mediaAttachments.length > 0) {
-                            mediaHtml = '<div class="media-gallery">';
-                            mediaAttachments.forEach(media => {
-                                if (media.type === 'image') {
-                                    mediaHtml += `<img src="${media.url}" alt="${media.description || 'Imagen adjunta'}">`;
-                                }
-                            });
-                            mediaHtml += '</div>';
-                        }
-
-                        const htmlContent = `
-                            <div class="toot">
-                                <p>${content}</p>
-                                ${mediaHtml}
-                                <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
-                                <button onclick="viewPost('${toot.id}')">Ver más</button>
-                            </div>
-                            <hr/>
-                        `;
-                        contentDiv.innerHTML += htmlContent;
-                    });
-                } else {
-                    errorDiv.innerText = 'No se encontraron toots.';
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                contentDiv.innerHTML = '';
-                errorDiv.innerText = `Error: ${error.message}`;
+        async function fetchTimeline(apiEndpoint) {
+            const response = await fetch(apiEndpoint);
+            if (!response.ok) {
+                console.error('Error fetching timeline:', response.statusText);
+                return [];
             }
+            return await response.json();
         }
 
-        async function viewPost(postId) {
-            const modal = document.getElementById("postModal");
-            const modalContent = document.getElementById("modal-content");
-            const errorDiv = document.getElementById("error-message");
-
-            try {
-                const postResponse = await fetch(`${instanceURL}/api/v1/statuses/${postId}`);
-                if (!postResponse.ok) {
-                    throw new Error(`Error al cargar el toot: ${postResponse.status} ${postResponse.statusText}`);
-                }
-                const post = await postResponse.json();
-                const content = sanitizeHTML(post.content);
-                const createdAt = new Date(post.created_at).toLocaleString();
-                const url = post.url;
-                const mediaAttachments = post.media_attachments;
-                let mediaHtml = '';
-
-                if (mediaAttachments.length > 0) {
-                    mediaHtml = '<div class="media-gallery">';
-                    mediaAttachments.forEach(media => {
-                        if (media.type === 'image') {
-                            mediaHtml += `<img src="${media.url}" alt="${media.description || 'Imagen adjunta'}">`;
-                        }
-                    });
-                    mediaHtml += '</div>';
-                }
-
-                const htmlContent = `
-                    <div class="toot">
-                        <p>${content}</p>
-                        ${mediaHtml}
-                        <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
-                    </div>
+        function createTootElement(toot) {
+            const tootElement = document.createElement('div');
+            tootElement.classList.add('toot');
+            if (toot.reblog) {
+                // Es un retweet
+                tootElement.innerHTML = `
+                    <p><em>Republicado por ${toot.account.display_name}:</em></p>
+                    <p>${toot.reblog.content}</p>
+                    <p><strong>${toot.reblog.account.display_name}</strong> @${toot.reblog.account.acct}</p>
                 `;
-                modalContent.innerHTML = htmlContent;
-                modal.style.display = "block";
-            } catch (error) {
-                console.error("Error:", error);
-                errorDiv.innerText = `Error: ${error.message}`;
+            } else {
+                // Es un toot original
+                tootElement.innerHTML = `
+                    <p>${toot.content}</p>
+                    <p><strong>${toot.account.display_name}</strong> @${toot.account.acct}</p>
+                `;
+            }
+            addTranslationButton(tootElement, toot.content);
+            return tootElement;
+        }
+
+        function displayTimeline(timeline) {
+            const timelineContainer = document.getElementById('timeline');
+            timelineContainer.innerHTML = '';
+            timeline.forEach(toot => {
+                const tootElement = createTootElement(toot);
+                timelineContainer.appendChild(tootElement);
+            });
+        }
+
+        async function loadTimeline() {
+            const timeline = await fetchTimeline('https://mastodon.example/api/v1/accounts/1/statuses?exclude_replies=true&exclude_reblogs=false'); // Ajusta la URL de la API según sea necesario
+            displayTimeline(timeline);
+        }
+
+        async function fetchUserStats(apiEndpoint) {
+            const response = await fetch(apiEndpoint);
+            if (!response.ok) {
+                console.error('Error fetching user stats:', response.statusText);
+                return null;
+            }
+            return await response.json();
+        }
+
+        function displayUserStats(stats) {
+            const statsContainer = document.getElementById('stats');
+            statsContainer.innerHTML = `
+                <div><strong>Toots:</strong> ${stats.statuses_count}</div>
+                <div><strong>Seguidores:</strong> ${stats.followers_count}</div>
+                <div><strong>Seguidos:</strong> ${stats.following_count}</div>
+            `;
+        }
+
+        async function loadUserStats() {
+            const stats = await fetchUserStats('https://mastodon.example/api/v1/accounts/verify_credentials'); // Ajusta la URL de la API según sea necesario
+            if (stats) {
+                displayUserStats(stats);
             }
         }
 
-        function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'blue' : 'light';
-            body.setAttribute('data-theme', newTheme);
-            document.getElementById('theme-toggle').innerText = `Tema: ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)}`;
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTimeline();
+            loadUserStats();
+            addImageDescriptionViewer();
+        });
+
+        function addImageDescriptionViewer() {
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                img.addEventListener('load', () => {
+                    if (img.alt) {
+                        const description = document.createElement('span');
+                        description.textContent = `Descripción: ${img.alt}`;
+                        description.style.display = 'block';
+                        img.parentElement.appendChild(description);
+                    }
+                });
+            });
         }
 
-        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-
-        window.onload = loadToots;
-
-        // Modal close functionality
-        const modal = document.getElementById("postModal");
-        const span = document.getElementsByClassName("close")[0];
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
+        function addTranslationButton(tootElement, tootContent) {
+            const translateButton = document.createElement('button');
+            translateButton.textContent = 'Traducir';
+            translateButton.addEventListener('click', () => {
+                // Aquí puedes realizar una llamada a una API de traducción
+                // y actualizar el contenido del toot con la traducción.
+                alert('Función de traducción en desarrollo');
+            });
+            tootElement.appendChild(translateButton);
         }
     </script>
 </body>
