@@ -14,20 +14,22 @@
             --title-font-size: 2.5em;
         }
 
-        [data-theme="dark"] {
-            --background-color: #121212;
-            --text-color: #ffffff;
-            --link-color: #bb86fc;
-            --link-hover-color: #3700b3;
-            --error-color: #cf6679;
+        /* Tema por defecto */
+        body[data-theme="default"] {
+            --background-color: var(--default-bg-color);
+            --text-color: var(--default-text-color);
         }
 
-        [data-theme="blue"] {
-            --background-color: #e0f7fa;
-            --text-color: #00796b;
-            --link-color: #004d40;
-            --link-hover-color: #00251a;
-            --error-color: #d32f2f;
+        /* Tema riot */
+        body[data-theme="riot"] {
+            --background-color: var(--main-bg-color);
+            --text-color: var(--main-text-color);
+        }
+
+        /* Tema scarlet */
+        body[data-theme="scarlet"] {
+            --background-color: var(--main-bg-color);
+            --text-color: var(--main-text-color);
         }
 
         body {
@@ -175,7 +177,7 @@
         }
     </style>
 </head>
-<body data-theme="light">
+<body data-theme="default">
     <h1>Mis Toots <img id="mastodon-icon" src="https://upload.wikimedia.org/wikipedia/commons/4/48/Mastodon_Logotype_%28Simple%29.svg" alt="Mastodon Icon"></h1>
     <div id="rss-content">Cargando...</div>
     <div id="error-message"></div>
@@ -343,11 +345,13 @@
             }
         }
 
+        let themes = ['default', 'riot', 'scarlet'];
+        let currentThemeIndex = 0;
+
         function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'blue' : 'light';
-            body.setAttribute('data-theme', newTheme);
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const newTheme = themes[currentThemeIndex];
+            document.body.setAttribute('data-theme', newTheme);
             document.getElementById('theme-toggle').innerText = `Tema: ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)}`;
         }
 
