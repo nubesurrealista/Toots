@@ -241,6 +241,9 @@
             const links = contentDiv.querySelectorAll('a');
             for (const link of links) {
                 const url = link.href;
+                if (url.includes(instanceURL)) {
+                    continue; // Skip links from the same Mastodon instance
+                }
                 const previewData = await fetchLinkPreview(url);
                 if (previewData) {
                     const previewHtml = `
