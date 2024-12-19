@@ -152,6 +152,28 @@
             width: 50px;
             height: 50px;
         }
+
+        .toot-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .toot-info {
+            margin-left: 10px;
+        }
+
+        .embed {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body data-theme="light">
@@ -179,6 +201,25 @@
             return template.content.textContent || '';
         }
 
+        function linkify(text) {
+            const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+            return text.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+        }
+
+        function embedContent(content) {
+            let embedHtml = content;
+
+            // Embed YouTube videos
+            const youtubePattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
+            embedHtml = embedHtml.replace(youtubePattern, '<iframe width="560" height="315" src="https://www.youtube.com/embed/$1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>');
+
+            // Embed general URLs (can be extended for more services)
+            const urlPattern = /(https?:\/\/[^\s]+)/g;
+            embedHtml = embedHtml.replace(urlPattern, '<div class="embed"><a href="$1" target="_blank" rel="noopener noreferrer">$1</a></div>');
+
+            return embedHtml;
+        }
+
         async function loadToots() {
             const errorDiv = document.getElementById("error-message");
             const contentDiv = document.getElementById("rss-content");
@@ -196,7 +237,7 @@
                 }
 
                 const userId = account.id;
-                const tootsResponse = await fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?limit=20`);
+                const tootsResponse = await fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?limit=20&exclude_replies=false`);
                 if (!tootsResponse.ok) {
                     throw new Error(`Error al cargar los toots: ${tootsResponse.status} ${tootsResponse.statusText}`);
                 }
@@ -205,10 +246,11 @@
                 contentDiv.innerHTML = '';
                 if (toots.length > 0) {
                     toots.forEach(toot => {
-                        const content = sanitizeHTML(toot.content);
+                        const content = linkify(embedContent(sanitizeHTML(toot.content)));
                         const createdAt = new Date(toot.created_at).toLocaleString();
                         const url = toot.url;
                         const mediaAttachments = toot.media_attachments;
+                        const avatar = toot.account.avatar;
                         let mediaHtml = '';
 
                         if (mediaAttachments.length > 0) {
@@ -223,8 +265,18 @@
 
                         const htmlContent = `
                             <div class="toot">
+                                <div class="toot-header">
+                                    <img src="${avatar}" alt="Avatar" class="avatar">
+                                    <div class="toot-info">
+                                        <h3>${toot.account.display_name}</h3>
+                                        <p>@${toot.account.acct}</p>
+                                    </div>
+                                </div>
                                 <p>${content}</p>
                                 ${mediaHtml}
+                                <p>Favoritos: ${toot.favourites_count}</p>
+                                <p>Reblogs: ${toot.reblogs_count}</p>
+                                <p>Bookmarks: ${toot.bookmarks_count}</p>
                                 <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
                                 <button onclick="viewPost('${toot.id}')">Ver más</button>
                             </div>
@@ -253,7 +305,7 @@
                     throw new Error(`Error al cargar el toot: ${postResponse.status} ${postResponse.statusText}`);
                 }
                 const post = await postResponse.json();
-                const content = sanitizeHTML(post.content);
+                const content = linkify(embedContent(sanitizeHTML(post.content)));
                 const createdAt = new Date(post.created_at).toLocaleString();
                 const url = post.url;
                 const mediaAttachments = post.media_attachments;
@@ -273,6 +325,9 @@
                     <div class="toot">
                         <p>${content}</p>
                         ${mediaHtml}
+                        <p>Favoritos: ${post.favourites_count}</p>
+                        <p>Reblogs: ${post.reblogs_count}</p>
+                        <p>Bookmarks: ${post.bookmarks_count}</p>
                         <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
                     </div>
                 `;
