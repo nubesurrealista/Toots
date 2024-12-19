@@ -90,6 +90,21 @@
             transform: scale(1.05);
         }
 
+        .link-preview {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid var(--link-color);
+            border-radius: 5px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .link-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
         #theme-toggle {
             position: fixed;
             top: 10px;
@@ -193,11 +208,51 @@
     <script>
         const instanceURL = 'https://tkz.one';
         const userHandle = 'nubesurrealista';
+        const linkPreviewApiKey = 'b0a8335fdc903c0b312b64d3c72b62c2';
 
         function sanitizeHTML(html) {
             const template = document.createElement('template');
             template.innerHTML = html;
             return template.content.textContent || '';
+        }
+
+        function convertLinksToClickable(content) {
+            const urlPattern = /https?:\/\/[^\s]+/g;
+            return content.replace(urlPattern, (url) => {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+            });
+        }
+
+        async function fetchLinkPreview(url) {
+            try {
+                const response = await fetch(`https://api.linkpreview.net/?key=${linkPreviewApiKey}&q=${encodeURIComponent(url)}`);
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error fetching link preview');
+                }
+            } catch (error) {
+                console.error('Error fetching link preview:', error);
+                return null;
+            }
+        }
+
+        async function generateLinkPreviews(contentDiv) {
+            const links = contentDiv.querySelectorAll('a');
+            for (const link of links) {
+                const url = link.href;
+                const previewData = await fetchLinkPreview(url);
+                if (previewData) {
+                    const previewHtml = `
+                        <div class="link-preview">
+                            <img src="${previewData.image}" alt="${previewData.title}">
+                            <p><strong>${previewData.title}</strong></p>
+                            <p>${previewData.description}</p>
+                        </div>
+                    `;
+                    link.insertAdjacentHTML('afterend', previewHtml);
+                }
+            }
         }
 
         async function loadToots() {
@@ -230,6 +285,7 @@
                         const tootContent = isReblog ? toot.reblog : toot;
                         
                         let content = sanitizeHTML(tootContent.content);
+                        content = convertLinksToClickable(content);
                         const createdAt = new Date(tootContent.created_at).toLocaleString();
                         const url = tootContent.url;
                         const mediaAttachments = tootContent.media_attachments;
@@ -275,6 +331,9 @@
                         `;
                         contentDiv.innerHTML += htmlContent;
                     });
+
+                    // Generate link previews after toots are loaded
+                    await generateLinkPreviews(contentDiv);
                 } else {
                     errorDiv.innerText = 'No se encontraron toots.';
                 }
@@ -297,6 +356,7 @@
                 }
                 const post = await postResponse.json();
                 let content = sanitizeHTML(post.content);
+                content = convertLinksToClickable(content);
                 const createdAt = new Date(post.created_at).toLocaleString();
                 const url = post.url;
                 const mediaAttachments = post.media_attachments;
@@ -337,6 +397,9 @@
                 `;
                 modalContent.innerHTML = htmlContent;
                 modal.style.display = "block";
+
+                // Generate link previews for the modal content
+                await generateLinkPreviews(modalContent);
             } catch (error) {
                 console.error("Error:", error);
                 errorDiv.innerText = `Error: ${error.message}`;
