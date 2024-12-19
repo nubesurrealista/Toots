@@ -46,7 +46,7 @@
 
         a:hover {
             text-decoration: underline;
-            color: var (--link-hover-color);
+            color: var(--link-hover-color);
         }
 
         #rss-content {
@@ -167,12 +167,6 @@
         .toot-info {
             margin-left: 10px;
         }
-
-        .icon {
-            width: 16px;
-            height: 16px;
-            margin-right: 4px;
-        }
     </style>
 </head>
 <body data-theme="light">
@@ -226,14 +220,13 @@
                 contentDiv.innerHTML = '';
                 if (toots.length > 0) {
                     toots.forEach(toot => {
-                        const content = sanitizeHTML(toot.content);
+                        let content = sanitizeHTML(toot.content);
                         const createdAt = new Date(toot.created_at).toLocaleString();
                         const url = toot.url;
                         const mediaAttachments = toot.media_attachments;
                         const avatar = toot.account.avatar;
                         const emojis = toot.emojis;
                         let mediaHtml = '';
-                        let emojiHtml = '';
 
                         if (mediaAttachments.length > 0) {
                             mediaHtml = '<div class="media-gallery">';
@@ -262,10 +255,7 @@
                                 </div>
                                 <p>${content}</p>
                                 ${mediaHtml}
-                                <p>
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Octicons-star.svg" class="icon" alt="Like"> ${toot.favourites_count}
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Octicons-repo-forked.svg" class="icon" alt="Retoot"> ${toot.reblogs_count}
-                                </p>
+                                <p>Likes: ${toot.favourites_count} | Impulsos: ${toot.reblogs_count}</p>
                                 <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
                                 <button onclick="viewPost('${toot.id}')">Ver más</button>
                             </div>
@@ -294,14 +284,13 @@
                     throw new Error(`Error al cargar el toot: ${postResponse.status} ${postResponse.statusText}`);
                 }
                 const post = await postResponse.json();
-                const content = sanitizeHTML(post.content);
+                let content = sanitizeHTML(post.content);
                 const createdAt = new Date(post.created_at).toLocaleString();
                 const url = post.url;
                 const mediaAttachments = post.media_attachments;
                 const avatar = post.account.avatar;
                 const emojis = post.emojis;
                 let mediaHtml = '';
-                let emojiHtml = '';
 
                 if (mediaAttachments.length > 0) {
                     mediaHtml = '<div class="media-gallery">';
@@ -330,10 +319,7 @@
                         </div>
                         <p>${content}</p>
                         ${mediaHtml}
-                        <p>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Octicons-star.svg" class="icon" alt="Like"> ${post.favourites_count}
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Octicons-repo-forked.svg" class="icon" alt="Retoot"> ${post.reblogs_count}
-                        </p>
+                        <p>Likes: ${post.favourites_count} | Impulsos: ${post.reblogs_count}</p>
                         <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
                     </div>
                 `;
