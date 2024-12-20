@@ -223,11 +223,27 @@
             });
         }
 
+        function getCachedPreview(url) {
+            const cachedData = localStorage.getItem(url);
+            return cachedData ? JSON.parse(cachedData) : null;
+        }
+
+        function setCachedPreview(url, data) {
+            localStorage.setItem(url, JSON.stringify(data));
+        }
+
         async function fetchLinkPreview(url) {
+            const cachedPreview = getCachedPreview(url);
+            if (cachedPreview) {
+                return cachedPreview;
+            }
+
             try {
                 const response = await fetch(`https://api.linkpreview.net/?key=${linkPreviewApiKey}&q=${encodeURIComponent(url)}`);
                 if (response.ok) {
-                    return response.json();
+                    const data = await response.json();
+                    setCachedPreview(url, data);
+                    return data;
                 } else {
                     throw new Error('Error fetching link preview');
                 }
