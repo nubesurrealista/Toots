@@ -3,451 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Toots</title>
+    <title>Mis Links</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@catppuccin/palette/css/catppuccin.css">
     <style>
         :root {
-            --background-color: #ffffff;
-            --text-color: #000000;
-            --link-color: #0366d6;
-            --link-hover-color: #034c9b;
-            --error-color: red;
-            --title-font-size: 2.5em;
-        }
+            --bg-color: var(--ctp-mocha-base);
+            --text-color: var(--ctp-mocha-text);
+            --link-bg: var(--ctp-mocha-surface0);
+            --link-hover: var(--ctp-mocha-surface2);
 
-        [data-theme="dark"] {
-            --background-color: #121212;
-            --text-color: #ffffff;
-            --link-color: #bb86fc;
-            --link-hover-color: #3700b3;
-            --error-color: #cf6679;
-        }
+            --bg-color-mocha: var(--ctp-mocha-base);
+            --text-color-mocha: var(--ctp-mocha-text);
+            --link-bg-mocha: var(--ctp-mocha-surface0);
+            --link-hover-mocha: var(--ctp-mocha-surface2);
 
-        [data-theme="blue"] {
-            --background-color: #e0f7fa;
-            --text-color: #00796b;
-            --link-color: #004d40;
-            --link-hover-color: #00251a;
-            --error-color: #d32f2f;
+            --bg-color-latte: var(--ctp-latte-base);
+            --text-color-latte: var(--ctp-latte-text);
+            --link-bg-latte: var(--ctp-latte-surface0);
+            --link-hover-latte: var(--ctp-latte-surface2);
+
+            --bg-color-frappe: var(--ctp-frappe-base);
+            --text-color-frappe: var(--ctp-frappe-text);
+            --link-bg-frappe: var(--ctp-frappe-surface0);
+            --link-hover-frappe: var(--ctp-frappe-surface2);
+
+            --bg-color-macchiato: var(--ctp-macchiato-base);
+            --text-color-macchiato: var(--ctp-macchiato-text);
+            --link-bg-macchiato: var(--ctp-macchiato-surface0);
+            --link-hover-macchiato: var(--ctp-macchiato-surface2);
         }
 
         body {
-            font-family: sans-serif;
-            background-color: var(--background-color);
+            font-family: 'Comic Neue', sans-serif;
+            background-color: var(--bg-color);
             color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
             margin: 0;
-            padding: 1em;
+            padding: 20px;
+            box-sizing: border-box;
             transition: background-color 0.3s, color 0.3s;
         }
 
-        a {
-            color: var(--link-color);
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-            color: var(--link-hover-color);
-        }
-
-        #rss-content {
-            overflow-wrap: break-word;
-        }
-
-        #error-message {
-            color: var(--error-color);
-        }
-
-        .toot {
-            margin-bottom: 1em;
-            padding: 1em;
-            border-radius: 5px;
-            background-color: rgba(128, 128, 128, 0.1);
-            transition: transform 0.3s;
-        }
-
-        .toot:hover {
-            transform: scale(1.02);
-        }
-
-        .toot p {
-            margin: 0.5em 0;
-        }
-
-        .media-gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px; /* Espacio entre imágenes */
-        }
-
-        .media-gallery img {
-            max-width: 100%; /* Asegura que las imágenes no se desborden */
-            height: auto;
-            border-radius: 5px;
-            transition: transform 0.3s;
-        }
-
-        .media-gallery img:hover {
-            transform: scale(1.05);
-        }
-
-        .link-preview {
-            margin-top: 10px;
-            padding: 10px;
-            border: 1px solid var(--link-color);
-            border-radius: 5px;
-            background-color: var(--background-color);
-            color: var(--text-color);
-        }
-
-        .link-preview img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-
-        #theme-toggle {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            background-color: var(--link-color);
-            color: var(--background-color);
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
+        .container {
             width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
-            padding-top: 60px;
+            max-width: 480px;
         }
 
-        .modal-content {
-            background-color: var(--background-color);
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
+        .profile {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ffffff;
         }
 
-        .close:hover,
-        .close:focus {
-            color: black;
+        .profile-name {
+            margin-top: 15px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .profile-bio {
+            color: #aaaaaa;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .link {
+            background-color: var(--link-bg);
+            color: var(--text-color);
             text-decoration: none;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .link:hover {
+            background-color: var(--link-hover);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .social-link {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 24px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .social-link:hover {
+            opacity: 1;
+        }
+
+        .theme-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #03dac6;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
             cursor: pointer;
         }
 
-        h1 {
-            font-size: var(--title-font-size);
-            animation: fadeIn 2s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        #mastodon-icon {
-            width: 50px;
-            height: 50px;
-        }
-
-        .toot-header {
-            display: flex;
-            align-items: center;
-        }
-
-        .avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-        }
-
-        .toot-info {
-            margin-left: 10px;
-        }
-
-        .emoji {
-            width: 1.2em;
-            height: 1.2em;
-            vertical-align: middle;
+        .theme-selector select {
+            background: transparent;
+            color: white;
+            border: none;
+            outline: none;
         }
     </style>
 </head>
-<body data-theme="light">
-    <h1>Mis Toots <img id="mastodon-icon" src="https://upload.wikimedia.org/wikipedia/commons/4/48/Mastodon_Logotype_%28Simple%29.svg" alt="Mastodon Icon"></h1>
-    <div id="rss-content">Cargando...</div>
-    <div id="error-message"></div>
-    <button id="theme-toggle">Cambiar Tema</button>
-    <a href="https://github.com/nubesurrealista/Toots" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+<body data-theme="mocha">
+    <div class="container">
+        <div class="profile">
+            <img src="https://avatars.githubusercontent.com/nubesurrealista" alt="Profile" class="profile-image">
+            <div class="profile-name">Ángel</div>
+            <div class="profile-bio">
+                <p>¡Hola!</p>
+                <p>Mi nombre es Ángel, tengo 24 años y estos son mis links.</p>
+                <p>Me gusta hacer muchas cosas por eso necesitaba un lugar para agrupar mis links, y al final lo he encontrado ^^</p>
+                <p>Me gustan:</p>
+                <ul>
+                    <li>El anime y manga</li>
+                    <li>El open source</li>
+                    <li>La poesía</li>
+                    <li>Música</li>
+                    <li>Literatura en general</li>
+                </ul>
+            </div>
+        </div>
 
-    <!-- Modal for viewing individual posts -->
-    <div id="postModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="modal-content"></div>
+        <div class="links">
+            <a href="https://tkz.one/@nubesurrealista" class="link"><i class="fab fa-mastodon"></i> Mastodon</a>
+            <a href="https://t.me/surrealcloud" class="link"><i class="fab fa-telegram"></i> Telegram</a>
+            <a href="https://bsky.app/profile/nubesurrealista.tkz.one.ap.brid.gy" class="link">
+                <img src="https://simpleicons.org/icons/bluesky.svg" alt="Bluesky" style="width: 20px; height: 20px; vertical-align: middle;"> Bluesky (espejo)
+            </a>
+            <a href="https://nubesurrealista.github.io/Toots/" class="link"><i class="fas fa-link"></i> Toots</a>
+            <a href="https://github.com/nubesurrealista" class="link"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+
+        <div class="visits">
+            <p>Visitas: <span id="visitCount">0</span></p>
+        </div>
+
+        <div class="message-form">
+            <h5>Deja un mensaje anónimo</h5>
+            <textarea id="messageInput" rows="3" placeholder="Escribe tu mensaje aquí..."></textarea>
+            <button class="btn" onclick="submitMessage()">Enviar</button>
+        </div>
+
+        <div class="message-list">
+            <h5>Mensajes</h5>
+            <ul id="messageList"></ul>
         </div>
     </div>
 
-    <script>
-        const instanceURL = 'https://tkz.one';
-        const userHandle = 'nubesurrealista';
-        const linkPreviewApiKey = 'b0a8335fdc903c0b312b64d3c72b62c2';
+    <div class="theme-selector">
+        <label for="themeSelect">Seleccionar Tema:</label>
+        <select id="themeSelect" onchange="changeTheme(this.value)">
+            <option value="mocha">Mocha</option>
+            <option value="latte">Latte</option>
+            <option value="frappe">Frappe</option>
+            <option value="macchiato">Macchiato</option>
+        </select>
+    </div>
 
-        function sanitizeHTML(html) {
-            const template = document.createElement('template');
-            template.innerHTML = html;
-            return template.content.textContent || '';
+    <script>
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            root.style.setProperty('--bg-color', `var(--bg-color-${theme})`);
+            root.style.setProperty('--text-color', `var(--text-color-${theme})`);
+            root.style.setProperty('--link-bg', `var(--link-bg-${theme})`);
+            root.style.setProperty('--link-hover', `var(--link-hover-${theme})`);
         }
 
-        function convertLinksToClickable(content) {
-            const urlPattern = /https?:\/\/[^\s]+/g;
-            return content.replace(urlPattern, (url) => {
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        function changeTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            applyTheme(theme);
+            localStorage.setItem('theme', theme);
+        }
+
+        function loadPage() {
+            updateVisitCount();
+            loadMessages();
+            clearOldMessages();
+
+            const savedTheme = localStorage.getItem('theme') || 'mocha';
+            changeTheme(savedTheme);
+        }
+
+        function updateVisitCount() {
+            let visitCount = localStorage.getItem('visitCount') || 0;
+            visitCount = parseInt(visitCount) + 1;
+            localStorage.setItem('visitCount', visitCount);
+            document.getElementById('visitCount').textContent = visitCount;
+        }
+
+        function loadMessages() {
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML = '';
+            messages.forEach((message, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = message;
+                messageList.appendChild(listItem);
             });
         }
 
-        function getCachedPreview(url) {
-            const cachedData = localStorage.getItem(url);
-            return cachedData ? JSON.parse(cachedData) : null;
-        }
-
-        function setCachedPreview(url, data) {
-            localStorage.setItem(url, JSON.stringify(data));
-        }
-
-        async function fetchLinkPreview(url) {
-            const cachedPreview = getCachedPreview(url);
-            if (cachedPreview) {
-                return cachedPreview;
-            }
-
-            try {
-                const response = await fetch(`https://api.linkpreview.net/?key=${linkPreviewApiKey}&q=${encodeURIComponent(url)}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setCachedPreview(url, data);
-                    return data;
-                } else {
-                    throw new Error('Error fetching link preview');
-                }
-            } catch (error) {
-                console.error('Error fetching link preview:', error);
-                return null;
+        function submitMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            if (message) {
+                let messages = JSON.parse(localStorage.getItem('messages')) || [];
+                messages.push(message);
+                localStorage.setItem('messages', JSON.stringify(messages));
+                localStorage.setItem('lastMessageTime', new Date().getTime());
+                messageInput.value = '';
+                loadMessages();
             }
         }
 
-        async function generateLinkPreviews(contentDiv) {
-            const links = contentDiv.querySelectorAll('a');
-            for (const link of links) {
-                const url = link.href;
-                if (url.includes(instanceURL)) {
-                    continue; // Skip links from the same Mastodon instance
-                }
-                const previewData = await fetchLinkPreview(url);
-                if (previewData) {
-                    const previewHtml = `
-                        <div class="link-preview">
-                            <img src="${previewData.image}" alt="${previewData.title}">
-                            <p><strong>${previewData.title}</strong></p>
-                            <p>${previewData.description}</p>
-                        </div>
-                    `;
-                    link.insertAdjacentHTML('afterend', previewHtml);
-                }
+        function clearOldMessages() {
+            const now = new Date().getTime();
+            const lastClear = localStorage.getItem('lastClear') || now;
+            const oneMonth = 1000 * 60 * 60 * 24 * 30;
+
+            if (now - lastClear > oneMonth) {
+                localStorage.removeItem('messages');
+                localStorage.setItem('lastClear', now);
             }
         }
 
-        async function loadToots() {
-            const errorDiv = document.getElementById("error-message");
-            const contentDiv = document.getElementById("rss-content");
-            contentDiv.innerHTML = 'Cargando...';
-            errorDiv.innerText = '';
-
-            try {
-                const accountResponse = await fetch(`${instanceURL}/api/v1/accounts/lookup?acct=${userHandle}`);
-                if (!accountResponse.ok) {
-                    throw new Error(`Error al buscar la cuenta: ${accountResponse.status} ${accountResponse.statusText}`);
-                }
-                const account = await accountResponse.json();
-                if (!account) {
-                    throw new Error(`No se encontró la cuenta ${userHandle}`);
-                }
-
-                const userId = account.id;
-                const tootsResponse = await fetch(`${instanceURL}/api/v1/accounts/${userId}/statuses?limit=20&exclude_replies=false&exclude_reblogs=false`);
-                if (!tootsResponse.ok) {
-                    throw new Error(`Error al cargar los toots: ${tootsResponse.status} ${tootsResponse.statusText}`);
-                }
-                const toots = await tootsResponse.json();
-
-                contentDiv.innerHTML = '';
-                if (toots.length > 0) {
-                    toots.forEach(toot => {
-                        const isReblog = toot.reblog !== null;
-                        const tootContent = isReblog ? toot.reblog : toot;
-                        
-                        let content = sanitizeHTML(tootContent.content);
-                        content = convertLinksToClickable(content);
-                        const createdAt = new Date(tootContent.created_at).toLocaleString();
-                        const url = tootContent.url;
-                        const mediaAttachments = tootContent.media_attachments;
-                        const avatar = tootContent.account.avatar;
-                        const emojis = tootContent.emojis;
-                        let mediaHtml = '';
-
-                        if (mediaAttachments.length > 0) {
-                            mediaHtml = '<div class="media-gallery">';
-                            mediaAttachments.forEach(media => {
-                                if (media.type === 'image') {
-                                    mediaHtml += `<img src="${media.url}" alt="${media.description || 'Imagen adjunta'}">`;
-                                }
-                            });
-                            mediaHtml += '</div>';
-                        }
-
-                        if (emojis.length > 0) {
-                            emojis.forEach(emoji => {
-                                content = content.replace(`:${emoji.shortcode}:`, `<img src="${emoji.url}" alt="${emoji.shortcode}" class="emoji">`);
-                            });
-                        }
-
-                        const reblogNotice = isReblog ? '<p>Impulsado por el usuario</p>' : '';
-
-                        const htmlContent = `
-                            <div class="toot">
-                                ${reblogNotice}
-                                <div class="toot-header">
-                                    <img src="${avatar}" alt="Avatar" class="avatar">
-                                    <div class="toot-info">
-                                        <h3>${tootContent.account.display_name}</h3>
-                                        <p>@${tootContent.account.acct}</p>
-                                    </div>
-                                </div>
-                                <p>${content}</p>
-                                ${mediaHtml}
-                                <p>Likes: ${tootContent.favourites_count} | Impulsos: ${tootContent.reblogs_count}</p>
-                                <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
-                                <button onclick="viewPost('${tootContent.id}')">Ver más</button>
-                            </div>
-                            <hr/>
-                        `;
-                        contentDiv.innerHTML += htmlContent;
-                    });
-
-                    // Generate link previews after toots are loaded
-                    await generateLinkPreviews(contentDiv);
-                } else {
-                    errorDiv.innerText = 'No se encontraron toots.';
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                contentDiv.innerHTML = '';
-                errorDiv.innerText = `Error: ${error.message}`;
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            if (darkModeMediaQuery.matches) {
+                changeTheme('mocha');
+            } else {
+                changeTheme('latte');
             }
-        }
+            darkModeMediaQuery.addEventListener('change', (e) => {
+                changeTheme(e.matches ? 'mocha' : 'latte');
+            });
 
-        async function viewPost(postId) {
-            const modal = document.getElementById("postModal");
-            const modalContent = document.getElementById("modal-content");
-            const errorDiv = document.getElementById("error-message");
-
-            try {
-                const postResponse = await fetch(`${instanceURL}/api/v1/statuses/${postId}`);
-                if (!postResponse.ok) {
-                    throw new Error(`Error al cargar el toot: ${postResponse.status} ${postResponse.statusText}`);
-                }
-                const post = await postResponse.json();
-                let content = sanitizeHTML(post.content);
-                content = convertLinksToClickable(content);
-                const createdAt = new Date(post.created_at).toLocaleString();
-                const url = post.url;
-                const mediaAttachments = post.media_attachments;
-                const avatar = post.account.avatar;
-                const emojis = post.emojis;
-                let mediaHtml = '';
-
-                if (mediaAttachments.length > 0) {
-                    mediaHtml = '<div class="media-gallery">';
-                    mediaAttachments.forEach(media => {
-                        if (media.type === 'image') {
-                            mediaHtml += `<img src="${media.url}" alt="${media.description || 'Imagen adjunta'}">`;
-                        }
-                    });
-                    mediaHtml += '</div>';
-                }
-
-                if (emojis.length > 0) {
-                    emojis.forEach(emoji => {
-                        content = content.replace(`:${emoji.shortcode}:`, `<img src="${emoji.url}" alt="${emoji.shortcode}" class="emoji">`);
-                    });
-                }
-
-                const htmlContent = `
-                    <div class="toot">
-                        <div class="toot-header">
-                            <img src="${avatar}" alt="Avatar" class="avatar">
-                            <div class="toot-info">
-                                <h3>${post.account.display_name}</h3>
-                                <p>@${post.account.acct}</p>
-                            </div>
-                        </div>
-                        <p>${content}</p>
-                        ${mediaHtml}
-                        <p>Likes: ${post.favourites_count} | Impulsos: ${post.reblogs_count}</p>
-                        <p><a href="${url}" target="_blank" rel="noopener noreferrer">Publicado el ${createdAt}</a></p>
-                    </div>
-                `;
-                modalContent.innerHTML = htmlContent;
-                modal.style.display = "block";
-
-                // Generate link previews for the modal content
-                await generateLinkPreviews(modalContent);
-            } catch (error) {
-                console.error("Error:", error);
-                errorDiv.innerText = `Error: ${error.message}`;
-            }
-        }
-
-        function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'blue' : 'light';
-            body.setAttribute('data-theme', newTheme);
-            document.getElementById('theme-toggle').innerText = `Tema: ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)}`;
-        }
-
-        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-
-        window.onload = loadToots;
-
-        // Modal close functionality
-        const modal = document.getElementById("postModal");
-        const span = document.getElementsByClassName("close")[0];
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
+            loadPage();
+        });
     </script>
 </body>
 </html>
