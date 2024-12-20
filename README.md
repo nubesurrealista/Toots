@@ -11,6 +11,9 @@ Agradecería cualquier ayuda para mejorarla ya que no soy programador y esto fue
 - Visualización de imágenes con efectos de hover.
 - Posibilidad de ver toots individuales en detalle.
 - Diseño responsivo para una mejor visualización en diferentes dispositivos.
+- Compatibilidad con emojis personalizados de la instancia y foto de perfil
+- Toots impulsados por el usuario
+- Genera Previews mediante la API de LinkPreview 
 
 ## Comenzando
 
