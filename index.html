@@ -223,27 +223,11 @@
             });
         }
 
-        function getCachedPreview(url) {
-            const cachedData = localStorage.getItem(url);
-            return cachedData ? JSON.parse(cachedData) : null;
-        }
-
-        function cachePreview(url, data) {
-            localStorage.setItem(url, JSON.stringify(data));
-        }
-
         async function fetchLinkPreview(url) {
             try {
-                const cachedData = getCachedPreview(url);
-                if (cachedData) {
-                    return cachedData;
-                }
-
                 const response = await fetch(`https://api.linkpreview.net/?key=${linkPreviewApiKey}&q=${encodeURIComponent(url)}`);
                 if (response.ok) {
-                    const previewData = await response.json();
-                    cachePreview(url, previewData);
-                    return previewData;
+                    return response.json();
                 } else {
                     throw new Error('Error fetching link preview');
                 }
