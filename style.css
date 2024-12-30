@@ -1,0 +1,193 @@
+:root {
+    --background-color: #ffffff;
+    --text-color: #000000;
+    --link-color: #0366d6;
+    --link-hover-color: #034c9b;
+    --error-color: red;
+    --title-font-size: 2.5em;
+}
+
+[data-theme="dark"] {
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --link-color: #bb86fc;
+    --link-hover-color: #3700b3;
+    --error-color: #cf6679;
+}
+
+[data-theme="blue"] {
+    --background-color: #e0f7fa;
+    --text-color: #00796b;
+    --link-color: #004d40;
+    --link-hover-color: #00251a;
+    --error-color: #d32f2f;
+}
+
+body {
+    font-family: sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 1em;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: var(--link-hover-color);
+}
+
+#rss-content {
+    overflow-wrap: break-word;
+}
+
+#error-message {
+    color: var(--error-color);
+}
+
+.toot {
+    margin-bottom: 1em;
+    padding: 1em;
+    border-radius: 5px;
+    background-color: rgba(128, 128, 128, 0.1);
+    transition: transform 0.3s;
+}
+
+.toot:hover {
+    transform: scale(1.02);
+}
+
+.toot p {
+    margin: 0.5em 0;
+}
+
+.media-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px; /* Espacio entre imágenes */
+}
+
+.media-gallery img {
+    max-width: 100%; /* Asegura que las imágenes no se desborden */
+    height: auto;
+    border-radius: 5px;
+    transition: transform 0.3s;
+}
+
+.media-gallery img:hover {
+    transform: scale(1.05);
+}
+
+.link-preview {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--link-color);
+    border-radius: 5px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.link-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+#theme-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 10px 20px;
+    background-color: var(--link-color);
+    color: var(--background-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    padding-top: 60px;
+}
+
+.modal-content {
+    background-color: var(--background-color);
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 80%;
+}
+
+.close {
+    color: black;
+    font-size: 28px;
+    font-weight: bold;
+    float: right;
+}
+
+.close:hover{
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+h1 {
+    font-size: var(--title-font-size);
+    animation: fadeIn 2s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#mastodon-icon {
+    width: 50px;
+    height: 50px;
+}
+
+.toot-header {
+    display: flex;
+    align-items: center;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.toot-info {
+    margin-left: 10px;
+}
+
+.emoji {
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: middle;
+}
+
+.viewMore {
+    border-radius: 5px;
+    border: none;
+    
+}
+
+.viewMore:hover {
+    cursor: pointer;
+}
